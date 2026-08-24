@@ -1,0 +1,44 @@
+# Serviço systemd do coletor de rede.
+#
+# Instalar:
+#   sudo cp collector /usr/local/bin/vd-collector
+#   sudo cp deploy/vd-collector.service /etc/systemd/system/
+#   sudo cp deploy/collector.env /etc/vd-collector.env   # e edite
+#   sudo chmod 600 /etc/vd-collector.env
+#   sudo systemctl enable --now vd-collector
+
+[Unit]
+Description=vd_stats - coletor de inventario de rede da unidade
+Documentation=https://github.com/joaov/vd_collector
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/vd-collector
+EnvironmentFile=/etc/vd-collector.env
+Restart=always
+RestartSec=30
+
+# O coletor nao precisa de privilegio: a varredura e TCP connect, nao socket
+# raw. Rodar sem privilegio limita o estrago caso o binario seja comprometido.
+DynamicUser=yes
+NoNewPrivileges=yes
+# A credencial do enrollment vive em /var/lib/vd-collector. StateDirectory cria
+# o diretorio com o dono certo mesmo com DynamicUser e e o unico lugar gravavel
+# com ProtectSystem=strict — gravar em /etc falharia DEPOIS de o convite ja ter
+# sido queimado no painel, que e a pior hora possivel para falhar.
+StateDirectory=vd-collector
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+# Binario compilado
+/collector
+/vd-collector
+
+# Configuracao local com segredo
+*.env
+!deploy/collector.env
+
+# Credencial local de enrollment (desenvolvimento com COLLECTOR_CREDENTIAL_PATH)
+credential.json
